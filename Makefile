@@ -25,6 +25,12 @@ stop: # Detiene el servidor
 # 2- Guardas el PID en una variable
 # 3- kill <PID>
 
+.PHONY: client
+client: #Usa curl para hacer una petición al servidor
+	@echo "Haciendo petición en el puerto ${PORT}"
+	@curl --max-time 2 127.0.0.1:${PORT} || true
+	@echo "Petición realizada"
+
 .PHONY: netcat
 netcat: # Instala netcat para evitar errores al correr el servidor
 	@echo "Instalando netcat..."
