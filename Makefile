@@ -25,6 +25,16 @@ stop: # Detiene el servidor
 # 2- Guardas el PID en una variable
 # 3- kill <PID>
 
+.PHONY: check
+check: # Verifica si el puerto 8080 está en uso
+	@if lsof -i :8080 > /dev/null; then \
+		echo "El puerto 8080 está en uso."; \
+		lsof -i :8080 > port.log || true;\
+	else \
+		echo "El puerto 8080 está libre."; \
+		lsof -i :8080 > port.log || true;\
+	fi
+
 .PHONY: client
 client: #Usa curl para hacer una petición al servidor
 	@echo "Haciendo petición en el puerto ${PORT}"
