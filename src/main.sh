@@ -43,6 +43,12 @@ fi
 
 echo "servidor simple con el puerto $PORT"
 while true; do
-    echo -e "HTTP/1.1 200 OK\n\n$MESSAGE" | nc -l -p "$PORT"
+    echo "Esperando conexión en puerto $PORT..."
+    if ! echo -e "HTTP/1.1 200 OK\n\n$MESSAGE $PORT" | nc -l -p "$PORT"; then
+
+        echo -e "HTTP/1.1 200 OK\n\n$MESSAGE" | nc -l -p "$PORT"
+        exit 3
+    fi
+    echo "Respuesta enviada"
     echo "================================"
 done
