@@ -10,6 +10,14 @@ if [[ -z "$PORT" ]] || ! [[ "$PORT" =~ ^[0-9]+$ ]]; then
     exit 1
 fi
 
+# Verificar dependencias
+for cmd in nc curl dig; do
+    if ! command -v "$cmd" &> /dev/null; then
+        echo "Error: la dependencia '$cmd' no está instalada" >&2
+        exit 2
+    fi
+done
+
 # Función de limpieza
 cleanup() {
     echo "Apagando servidor en puerto $PORT..."
