@@ -31,6 +31,16 @@ if ss -tan | grep -q ":$PORT "; then
     exit 3
 fi
 
+if ! dig +short google.com > /dev/null; then
+    echo "Error: fallo en resolución DNS" >&2
+    exit 4
+fi
+
+if ! curl -Is https://google.com > /dev/null; then
+    echo "Error: fallo en conexión TLS/HTTPS" >&2
+    exit 5
+fi
+
 echo "servidor simple con el puerto $PORT"
 while true; do
     echo -e "HTTP/1.1 200 OK\n\n$MESSAGE" | nc -l -p "$PORT"
