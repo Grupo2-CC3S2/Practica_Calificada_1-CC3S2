@@ -26,6 +26,11 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 
+if ss -tan | grep -q ":$PORT "; then
+    echo "Error: el puerto $PORT ya está en uso" >&2
+    exit 3
+fi
+
 echo "servidor simple con el puerto $PORT"
 while true; do
     echo -e "HTTP/1.1 200 OK\n\n$MESSAGE" | nc -l -p "$PORT"
