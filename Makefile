@@ -56,3 +56,14 @@ run-procesos: # Corre el script procesos.sh en segundo plano
 	@echo "Iniciando el proceso en segundo plano..."
 	@bash src/procesos.sh >> procesos.log 2>&1 &
 	@echo "Proceso iniciado. Escribe make stop-procesos para detenerlo."
+
+.PHONY: stop-procesos
+stop-procesos: # Detiene el proceso iniciado por run-procesos
+	@echo "Deteniendo el proceso..."
+	@PID=$$(pgrep -f procesos.sh); \
+	if [ -n "$$PID" ]; then \
+		kill $$PID && echo "Proceso detenido."; \
+	else \
+		echo "No hay proceso process.sh en ejecución."; \
+	fi
+
