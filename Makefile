@@ -67,3 +67,8 @@ stop-procesos: # Detiene el proceso iniciado por run-procesos
 		echo "No hay proceso process.sh en ejecución."; \
 	fi
 
+.PHONY: collect-logs
+collect-logs: # Muestra los últimos 10 registros de server.log y procesos.log
+	@echo "Iniciando recolección de logs..."
+	@bash src/logs.sh
+	@echo "Recolección de logs finalizada"
