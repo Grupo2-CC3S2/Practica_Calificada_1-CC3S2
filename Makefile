@@ -15,11 +15,15 @@ run: # Corre el servidor en el puerto especificado en segundo plano
 	@bash src/main.sh ${PORT} >> server.log 2>&1 &
 	@echo "Servidor iniciado. Escribe make stop para detenerlo."
 
-.PHONY: stop
-stop: # Detiene el servidor
+.PHONY: stop-server
+stop:
 	@echo "Deteniendo el servidor..."
-	@fuser -k "${PORT}"/tcp >/dev/null 2>&1 
-	@echo "Servidor detenido."
+	@PID=$$(lsof -ti :$(PORT)); \
+	if [ -n "$$PID" ]; then \
+		kill $$PID && echo "Servidor detenido."; \
+	else \
+		echo "No hay proceso en el puerto $(PORT)."; \
+	fi
 # También podemos usar 
 # 1- lsof -i :8080
 # 2- Guardas el PID en una variable
@@ -46,3 +50,25 @@ netcat: # Instala netcat para evitar errores al correr el servidor
 	@echo "Instalando netcat..."
 	@sudo apt update && sudo apt install -y netcat-openbsd
 	@echo "Netcat instalado"
+
+.PHONY: run-procesos
+run-procesos: # Corre el script procesos.sh en segundo plano
+	@echo "Iniciando el proceso en segundo plano..."
+	@bash src/procesos.sh >> procesos.log 2>&1 &
+	@echo "Proceso iniciado. Escribe make stop-procesos para detenerlo."
+
+.PHONY: stop-procesos
+stop-procesos: # Detiene el proceso iniciado por run-procesos
+	@echo "Deteniendo el proceso..."
+	@PID=$$(pgrep -f procesos.sh); \
+	if [ -n "$$PID" ]; then \
+		kill $$PID && echo "Proceso detenido."; \
+	else \
+		echo "No hay proceso process.sh en ejecución."; \
+	fi
+
+.PHONY: collect-logs
+collect-logs: # Muestra los últimos 10 registros de server.log y procesos.log
+	@echo "Iniciando recolección de logs..."
+	@bash src/logs.sh
+	@echo "Recolección de logs finalizada"
