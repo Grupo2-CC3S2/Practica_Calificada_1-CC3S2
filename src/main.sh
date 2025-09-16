@@ -8,6 +8,7 @@ set -euo pipefail
 # Función de limpieza
 cleanup() {
     echo "Apagando servidor en puerto $PORT..."
+    rm -f /tmp/tempfile
 }
 trap cleanup EXIT INT TERM
 
