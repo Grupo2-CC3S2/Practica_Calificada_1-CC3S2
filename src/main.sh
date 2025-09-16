@@ -4,6 +4,11 @@ set -euo pipefail
 #Variables de entorno con valores por defecto
 : "${PORT:=${1:-8080}}"
 : "${MESSAGE:="La aplicación está funcionando en el puerto"}"
+ 
+if [[ -z "$PORT" ]] || ! [[ "$PORT" =~ ^[0-9]+$ ]]; then
+    echo "Error: PORT inválido ($PORT)" >&2
+    exit 1
+fi
 
 # Función de limpieza
 cleanup() {
