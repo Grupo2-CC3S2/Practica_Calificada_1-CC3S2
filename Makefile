@@ -100,3 +100,19 @@ clean: # Deteniendo servidor y todos los procesos
 	-@make stop
 	-@make stop-procesos
 	-@make check
+
+.PHONY: lint
+lint: # instala shellcheck
+	@if command -v shellcheck > /dev/null; then \
+		echo "Shellcheck ya está instalado."; \
+		exit 0; \
+	else \
+		echo "Shellcheck no está instalado. Procediendo con la instalación..."; \
+		sudo apt update && sudo apt install -y shellcheck; \
+		echo "Shellcheck instalado"; \
+	fi
+
+.PHONY: check-lint
+check-lint: # corre shellcheck en los scripts
+	@shellcheck src/*.sh
+	@shellcheck Makefile
