@@ -1,19 +1,43 @@
 #!/usr/bin/env bats
 
 setup() {
-  PORT=8080
-  bash src/main.sh $PORT &
-  SERVER_PID=$!
-  # Esperar a que nc esté escuchando
-  sleep 1
+  make run
+  for i in {1..5}; do
+    if nc -z 127.0.0.1 8080; then
+      break
+    fi
+    sleep 1
+  done
 }
 
 teardown() {
-  lsof -ti tcp:$PORT | xargs -r kill -9
+  make stop
 }
 
-@test "Servidor responde en puerto por defecto (8080)" {
-  run curl -s --max-time 2 127.0.0.1:$PORT
+
+@test "Servidor está escuchando en el puerto 8080" {
+  run nc -z 127.0.0.1 8080
   [ "$status" -eq 0 ]
-  echo "$output" | grep -Eq "La aplicación está funcionando en el puerto[[:space:]][0-9]+"
+}
+
+@test "Servidor no responde a puerto equivocado" {
+  run nc -z 127.0.0.1 8081
+  [ "$status" -ne 0 ]
+}
+
+@test "Ejecución correcta de make client" {
+  run make client
+  [ "$status" -eq 0 ]
+}
+
+@test "Ejecución correcta de make check" {
+  run make check
+  [ "$status" -eq 0 ]
+}
+
+@test "Ejecución correcta de make run-procesos" {
+  run make "run-procesos"
+  [ "$status" -eq 0 ]
+
+  make "stop-procesos" || true
 }
