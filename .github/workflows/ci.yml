@@ -3,10 +3,10 @@ name: CI DevSecOps Basico
 on:
   push:
     branches: [main, develop, feature/luna_testeo-pipeline]
-    pull_request:
+  pull_request:
 
-  jobs:
-    build-test-sec:
+jobs:
+  build-test-sec:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,7 +23,10 @@ on:
       run: make test
 
     - name: Ejecutando todos los procesos
-      run: make run run-procesos
+      run: |
+        make run &
+        sleep 2
+        make run-procesos
 
     - name: Terminando todos los procesos
       run: make clean
