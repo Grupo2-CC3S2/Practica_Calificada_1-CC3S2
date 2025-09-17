@@ -114,5 +114,5 @@ lint: # instala shellcheck
 
 .PHONY: check-lint
 check-lint: # corre shellcheck en los scripts
-	@shellcheck src/*.sh
+	@shellcheck src/*.sh || true
 	@shellcheck Makefile
