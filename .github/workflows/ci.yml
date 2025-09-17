@@ -1,0 +1,29 @@
+name: CI DevSecOps Basico
+
+on:
+  push:
+    branches: [main, develop, feature/luna_testeo-pipeline]
+    pull_request:
+
+  jobs:
+    build-test-sec:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout del código
+      uses: actions/checkout@v3
+
+    - name: Configurar WSL / entorno Linux
+      run: sudo apt-get update && sudo apt-get install -y nc curl dig bats make
+
+    - name: Verificar instalación de bats
+      run: make install-bats
+
+    - name: Ejecutar pruebas básicas
+      run: make test
+
+    - name: Ejecutando todos los procesos
+      run: make run run-procesos
+
+    - name: Terminando todos los procesos
+      run: make clean
