@@ -18,6 +18,7 @@ jobs:
         sudo apt-get update && sudo apt-get install -y curl dnsutils bats make
         make netcat
         make install-bats
+        make lint
 
     - name: Ejecutar pruebas básicas
       run: make test
@@ -30,3 +31,6 @@ jobs:
 
     - name: Terminando todos los procesos
       run: make clean
+
+    - name: Uso de linters para scripts bash
+      run: make check-lint
