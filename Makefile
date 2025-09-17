@@ -15,7 +15,7 @@ run: # Corre el servidor en el puerto especificado en segundo plano
 	@bash src/main.sh ${PORT} >> server.log 2>&1 &
 	@echo "Servidor iniciado. Escribe make stop para detenerlo."
 
-.PHONY: stop-server
+.PHONY: stop
 stop:
 	@echo "Deteniendo el servidor..."
 	@PID=$$(lsof -ti :$(PORT)); \
@@ -72,3 +72,14 @@ collect-logs: # Muestra los últimos 10 registros de server.log y procesos.log
 	@echo "Iniciando recolección de logs..."
 	@bash src/logs.sh
 	@echo "Recolección de logs finalizada"
+
+.PHONY: install-bats
+install-bats: # Instala Bats para pruebas unitarias
+	@if command -v bats > /dev/null; then \
+		echo "Bats ya está instalado."; \
+		exit 0; \
+	else \
+		echo "Bats no está instalado. Procediendo con la instalación..."; \
+		sudo apt update && sudo apt install -y bats; \
+		echo "Bats instalado"; \
+	fi
