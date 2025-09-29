@@ -68,14 +68,37 @@ run_collector() {
     echo "Collector finalizado."
 }
 
-echo "servidor simple con el puerto $PORT"
-while true; do
-    echo "Esperando conexión en puerto $PORT..."
-    if ! echo -e "HTTP/1.1 200 OK\n\n$MESSAGE $PORT" | nc -l -p "$PORT"; then
+run_health_server() {
+    echo "Servidor health escuchando en puerto $PORT (Ctrl+C para salir)"
+    while true; do
+        {
+            # leer la primera línea de la petición (ej: "GET /salud HTTP/1.1")
+            if ! read -r request; then
+                printf 'HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\n\r\nBad Request'
+                continue
+            fi
 
-        echo -e "HTTP/1.1 200 OK\n\n$MESSAGE" | nc -l -p "$PORT"
-        exit 3
-    fi
-    echo "Respuesta enviada"
-    echo "================================"
-done
+            echo "Petición: $request" >&2
+            if [[ "$request" =~ ^GET\ /salud\  ]]; then
+                printf 'HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nOK'
+            else
+                printf 'HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\n\r\nNot Found'
+            fi
+        } | nc -l -p "$PORT"
+    done
+}
+
+
+case "${1:-}" in
+  collect)
+    run_collector
+    ;;
+  server|"")
+    run_health_server
+    ;;
+  *)
+    echo "Uso: $0 [collect|server]"
+    exit 2
+    ;;
+esac
+
