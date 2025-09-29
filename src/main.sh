@@ -49,6 +49,12 @@ if ! curl -Is https://google.com > /dev/null; then
     exit 5
 fi
 
+run_collector() {
+    echo "Iniciando collector para TARGETS='$TARGETS' -> $OUT_FILE"
+    bash "$COLLECTOR" "$TARGETS" "$OUT_FILE"
+    echo "Collector finalizado."
+}
+
 echo "servidor simple con el puerto $PORT"
 while true; do
     echo "Esperando conexión en puerto $PORT..."
