@@ -11,74 +11,74 @@ fi
 : "${PORT:=${1:-${PORT:-8080}}}"
 : "${MESSAGE:=${MESSAGE:-'La aplicación está funcionando en el puerto'}}"
 : "${TARGETS:=${TARGETS:-}}"
+: "${OUT_DIR:=${OUT_DIR:-out}}"
 
+log() {
+  local lvl="$1"; shift
+  echo "$(date --iso-8601=seconds) [$lvl] $*" | tee -a "$OUT_DIR/server.log"
+}
 
 if [[ -z "$PORT" ]] || ! [[ "$PORT" =~ ^[0-9]+$ ]]; then
-    echo "Error: PORT inválido ($PORT)" >&2
+    log ERROR "PORT inválido ($PORT)"
     exit 1
 fi
 
-# Verificar dependencias
-for cmd in nc curl dig; do
+for cmd in nc curl dig jq bats; do
     if ! command -v "$cmd" &> /dev/null; then
-        echo "Error: la dependencia '$cmd' no está instalada" >&2
+        log ERROR "Dependencia '$cmd' no encontrada"
         exit 2
     fi
 done
 
-# Función de limpieza
 cleanup() {
-    echo "Apagando servidor en puerto $PORT..."
+    log INFO "Apagando servidor en puerto $PORT..."
     rm -f /tmp/tempfile
 }
 trap cleanup EXIT INT TERM
 
-
 if ss -tan | grep -q ":$PORT "; then
-    echo "Error: el puerto $PORT ya está en uso" >&2
+    log ERROR "Puerto $PORT en uso"
     exit 3
 fi
 
 if ! dig +short google.com > /dev/null; then
-    echo "Error: fallo en resolución DNS" >&2
+    log ERROR "Fallo en resolución DNS"
     exit 4
 fi
 
 if ! curl -Is https://google.com > /dev/null; then
-    echo "Error: fallo en conexión TLS/HTTPS" >&2
+    log ERROR "Fallo en conexión TLS/HTTPS"
     exit 5
 fi
 
-
 run_collector() {
     if [ -z "${TARGETS:-}" ]; then
-        echo "Error: TARGETS no definido. Edita .env o exporta TARGETS." >&2
+        log ERROR "TARGETS no definido"
         exit 1
     fi
 
     COLLECTOR="$(dirname "$0")/collector.sh"
-    OUT_FILE="out/raw-headers.csv"
+    OUT_FILE="$OUT_DIR/raw-headers.csv"
     if [ ! -x "$COLLECTOR" ]; then
-        echo "Error: falta $COLLECTOR o no es ejecutable. Añade src/collector.sh" >&2
+        log ERROR "Falta $COLLECTOR o no es ejecutable"
         exit 1
     fi
 
-    echo "Iniciando collector para TARGETS='$TARGETS' -> $OUT_FILE"
+    log INFO "Iniciando collector para TARGETS='$TARGETS' -> $OUT_FILE"
     bash "$COLLECTOR" "$TARGETS" "$OUT_FILE"
-    echo "Collector finalizado."
+    log INFO "Collector finalizado. Resultado: $OUT_FILE"
 }
 
 run_health_server() {
-    echo "Servidor health escuchando en puerto $PORT (Ctrl+C para salir)"
+    log INFO "Servidor health escuchando en puerto $PORT"
     while true; do
         {
-            # leer la primera línea de la petición (ej: "GET /salud HTTP/1.1")
             if ! read -r request; then
                 printf 'HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\n\r\nBad Request'
                 continue
             fi
 
-            echo "Petición: $request" >&2
+            log DEBUG "Petición: $request"
             if [[ "$request" =~ ^GET\ /salud\  ]]; then
                 printf 'HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nOK'
             else
@@ -87,7 +87,6 @@ run_health_server() {
         } | nc -l -p "$PORT"
     done
 }
-
 
 case "${1:-}" in
   collect)
