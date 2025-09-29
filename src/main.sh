@@ -49,9 +49,17 @@ if ! curl -Is https://google.com > /dev/null; then
     exit 5
 fi
 
+
 run_collector() {
     if [ -z "${TARGETS:-}" ]; then
         echo "Error: TARGETS no definido. Edita .env o exporta TARGETS." >&2
+        exit 1
+    fi
+
+    COLLECTOR="$(dirname "$0")/collector.sh"
+    OUT_FILE="out/raw-headers.csv"
+    if [ ! -x "$COLLECTOR" ]; then
+        echo "Error: falta $COLLECTOR o no es ejecutable. Añade src/collector.sh" >&2
         exit 1
     fi
 
