@@ -50,6 +50,11 @@ if ! curl -Is https://google.com > /dev/null; then
 fi
 
 run_collector() {
+    if [ -z "${TARGETS:-}" ]; then
+        echo "Error: TARGETS no definido. Edita .env o exporta TARGETS." >&2
+        exit 1
+    fi
+
     echo "Iniciando collector para TARGETS='$TARGETS' -> $OUT_FILE"
     bash "$COLLECTOR" "$TARGETS" "$OUT_FILE"
     echo "Collector finalizado."
