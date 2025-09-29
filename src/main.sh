@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-#Variables de entorno con valores por defecto
-: "${PORT:=${1:-8080}}"
-: "${MESSAGE:="La aplicación está funcionando en el puerto"}"
- 
+ENV_FILE="$(dirname "$0")/../.env"
+if [ -f "$ENV_FILE" ]; then
+  # shellcheck disable=SC1090
+  source "$ENV_FILE"
+fi
+
+# Variables (prioridad: ARG -> env exportada -> .env defaults)
+: "${PORT:=${1:-${PORT:-8080}}}"
+: "${MESSAGE:=${MESSAGE:-'La aplicación está funcionando en el puerto'}}"
+: "${TARGETS:=${TARGETS:-}}"
+
+
 if [[ -z "$PORT" ]] || ! [[ "$PORT" =~ ^[0-9]+$ ]]; then
     echo "Error: PORT inválido ($PORT)" >&2
     exit 1
